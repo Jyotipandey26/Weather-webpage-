@@ -1,0 +1,34 @@
+# Weather-webpage-
+A weather webpage built using Python (Flask), HTML, CSS and OpenWeatherMap API, providing real-time weather data.
+from flask import Flask, render_template, request
+import requests
+
+app = Flask(__name__)
+
+# OpenWeatherMap API Key 
+API_KEY = "your_api_key_here"
+WEATHER_URL = "https://api.openweathermap.org/data/2.5/weather"
+
+@app.route("/", methods=["GET", "POST"])
+def home():
+    weather_data = None
+    if request.method == "POST":
+        city = request.form.get("city")
+        params = {"q": city, "appid": API_KEY, "units": "metric"}
+        response = requests.get(WEATHER_URL, params=params)
+        
+        if response.status_code == 200:
+            data = response.json()
+            weather_data = {
+                "city": city,
+                "temperature": data["main"]["temp"],
+                "description": data["weather"][0]["description"],
+                "icon": data["weather"][0]["icon"]
+            }
+        else:
+            weather_data = {"error": "City not found!"}
+
+    return render_template("index.html", weather=weather_data)
+
+if __name__ == "__main__":
+    app.run(debug=True)
